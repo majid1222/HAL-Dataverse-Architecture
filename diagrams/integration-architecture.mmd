@@ -1,0 +1,53 @@
+flowchart LR
+    subgraph Channels["Customer and staff channels"]
+        Magento["Magento storefront"]
+        Profile["Profile Service"]
+        Backoffice["Admin Backoffice"]
+        Finance["Financing Portal"]
+    end
+
+    subgraph Identity["Identity providers"]
+        Auth0["Auth0 - customers"]
+        Entra["Entra ID - staff"]
+    end
+
+    subgraph Azure["Azure integration layer"]
+        APIM["API Management"]
+        Functions["Azure Functions"]
+        Bus[("Azure Service Bus")]
+        Monitor["Application Insights / Azure Monitor"]
+        KV["Key Vault / Managed Identity"]
+    end
+
+    subgraph CRM["Microsoft business platform"]
+        DV[("Dynamics 365 / Dataverse")]
+    end
+
+    subgraph External["External and supporting services"]
+        Docs["Document service / secure Blob"]
+        Notify["Notification / OTP service"]
+        Banks["Partner banks"]
+    end
+
+    Magento <-->|"REST / HTTPS"| Profile
+    Profile -->|"REST / HTTPS"| APIM
+    Backoffice <-->|"App API / Dataverse Web API"| APIM
+    Finance -->|"REST / HTTPS status / commands"| APIM
+
+    APIM --> Functions
+    Functions <-->|"Dataverse Web API / OData over HTTPS"| DV
+    DV -->|"Async event publication - selected supported pattern"| Bus
+    Bus -->|"AMQP 1.0 / trigger"| Functions
+    Functions -->|"REST / HTTPS or scheduled pull"| Magento
+    Functions <-->|"REST / HTTPS"| Docs
+    Functions -->|"REST / HTTPS or message"| Notify
+    Finance <-->|"Partner API - details to validate"| Banks
+
+    Auth0 -.->|"Customer authentication"| Magento
+    Entra -.->|"Staff authentication"| Backoffice
+    KV -.->|"Workload identity / secrets"| Functions
+
+    APIM -.-> Monitor
+    Functions -.-> Monitor
+    Bus -.-> Monitor
+    DV -.-> Monitor

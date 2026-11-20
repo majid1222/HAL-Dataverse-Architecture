@@ -1,1 +1,110 @@
+erDiagram
+    ACCOUNT ||--o{ CONTACT : has
+    ACCOUNT ||--o{ MARKETPLACE_ROLE : participates_as
+    ACCOUNT ||--o{ KYB_APPLICATION : submits
+    KYB_APPLICATION ||--o{ KYB_SUBMISSION : has_versions
+    KYB_APPLICATION ||--o{ KYB_REVIEW : reviewed_by
+    KYB_APPLICATION ||--o{ KYB_VERIFICATION : verified_by
+    KYB_APPLICATION ||--o{ KYB_DOCUMENT : references
+    ACCOUNT ||--o{ FINANCING_APPLICATION_SUMMARY : applies_for
+    CONTACT o|--o{ FINANCING_APPLICATION_SUMMARY : applicant
+    LENDING_PARTNER ||--o{ FINANCING_APPLICATION_SUMMARY : receives
+    PRODUCT_CATEGORY o|--o{ PRODUCT : groups
+    INTEGRATION_MESSAGE ||--o{ INTEGRATION_ERROR : records
 
+    ACCOUNT {
+        guid accountid PK
+        string legalname
+        string registrationnumber
+        string registrationcountry
+        string externalcompanyid
+        string status
+    }
+    CONTACT {
+        guid contactid PK
+        guid parentcustomerid FK
+        string fullname
+        string email
+        string auth0subject
+    }
+    MARKETPLACE_ROLE {
+        guid marketplace_roleid PK
+        guid accountid FK
+        string role
+        string status
+        string externalreference
+    }
+    KYB_APPLICATION {
+        guid kyb_applicationid PK
+        guid accountid FK
+        string applicationnumber
+        string status
+        datetime submittedon
+    }
+    KYB_SUBMISSION {
+        guid kyb_submissionid PK
+        guid kyb_applicationid FK
+        int versionnumber
+        datetime submittedon
+    }
+    KYB_REVIEW {
+        guid kyb_reviewid PK
+        guid kyb_applicationid FK
+        string decision
+        string reasoncode
+        datetime decisiondate
+    }
+    KYB_VERIFICATION {
+        guid kyb_verificationid PK
+        guid kyb_applicationid FK
+        string verificationtype
+        string result
+    }
+    KYB_DOCUMENT {
+        guid kyb_documentid PK
+        guid kyb_applicationid FK
+        string documenttype
+        string storagereference
+        datetime expirydate
+    }
+    PRODUCT_CATEGORY {
+        guid product_categoryid PK
+        string externalcategoryid
+        string name
+    }
+    PRODUCT {
+        guid productid PK
+        string magentoproductid
+        string sku
+        string name
+        boolean active
+    }
+    LENDING_PARTNER {
+        guid lending_partnerid PK
+        string partnercode
+        string name
+    }
+    FINANCING_APPLICATION_SUMMARY {
+        guid financing_summaryid PK
+        guid accountid FK
+        guid contactid FK
+        guid lending_partnerid FK
+        string externalapplicationid
+        string status
+        decimal requestedamount
+        string currency
+    }
+    INTEGRATION_MESSAGE {
+        guid integration_messageid PK
+        string externalmessageid
+        string eventtype
+        string correlationid
+        string processingstatus
+    }
+    INTEGRATION_ERROR {
+        guid integration_errorid PK
+        guid integration_messageid FK
+        string category
+        int retrycount
+        string resolutionstatus
+    }

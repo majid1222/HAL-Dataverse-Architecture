@@ -1,0 +1,36 @@
+sequenceDiagram
+    autonumber
+    actor Customer
+    participant Store as Magento / Customer Channel
+    participant Profile as Profile Service
+    participant APIM as API Management
+    participant Fn as Azure Function
+    participant DV as Dataverse
+    participant Bus as Service Bus
+    participant Admin as Admin Backoffice
+    participant Notify as Notification Service
+
+    Customer->>Store: Submit company registration
+    Store->>Profile: Existing registration API (HTTPS)
+    Profile->>APIM: Registration command (HTTPS)
+    APIM->>Fn: Validate and map request
+    Fn->>DV: Upsert Account, Contact and role
+    DV-->>Fn: Dataverse record references
+    Fn-->>APIM: Registration result
+    APIM-->>Profile: Result
+    Profile-->>Store: Registration response
+    Store-->>Customer: Acknowledge request
+
+    Customer->>Store: Submit KYB information
+    Store->>Profile: KYB submission
+    Profile->>APIM: Submission command
+    APIM->>Fn: Process submission
+    Fn->>DV: Create application / submission / metadata
+    DV-->>Fn: Saved references
+    Fn-->>Profile: Submission accepted
+    Admin->>DV: Review application
+    Admin->>DV: Record decision and reason
+    DV-->>Bus: Publish status-change event
+    Bus-->>Fn: Deliver event
+    Fn->>Profile: Update existing channel contract
+    Fn->>Notify: Request customer notification
